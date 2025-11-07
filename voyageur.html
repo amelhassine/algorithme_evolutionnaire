@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyageur Terrestre - Optimisation Évolutionnaire</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0a0e27;
+            --secondary-color: #1a237e;
+            --accent-color: #00bcd4;
+            --text-color: #ffffff;
+            --card-bg: rgba(13, 27, 62, 0.7);
+            --neon-glow: 0 0 10px #00bcd4, 0 0 20px #00bcd4, 0 0 30px #00bcd4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', monospace;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Arrière-plan animé */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* En-tête */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 30px;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 188, 212, 0.3);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(0, 188, 212, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(0, 188, 212, 0.2);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 188, 212, 0.5);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+        }
+
+        /* Contenu principal */
+        .container {
+            display: flex;
+            padding: 100px 20px 40px;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Panneau de contrôle */
+        .control-panel {
+            flex: 1;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .parameter-group {
+            margin-bottom: 20px;
+        }
+
+        .parameter-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .parameter-input {
+            width: 100%;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .parameter-slider {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 5px;
+            color: var(--accent-color);
+        }
+
+        /* Algorithmes */
+        .algorithms-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .algorithm-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 188, 212, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .algorithm-card:hover {
+            background: rgba(0, 188, 212, 0.1);
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 188, 212, 0.3);
+        }
+
+        .algorithm-card.active {
+            background: rgba(0, 188, 212, 0.2);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 188, 212, 0.5);
+        }
+
+        .algorithm-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .algorithm-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Boutons */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: linear-gradient(45deg, #1a237e, #00bcd4);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Orbitron', monospace;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover:before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 188, 212, 0.4);
+        }
+
+        /* Zone de visualisation */
+        .visualization-area {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .visualization-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .visualization-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #path-canvas {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            width: 100%;
+            flex-grow: 1;
+            min-height: 400px;
+        }
+
+        /* Résultats */
+        .results-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .results-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(0, 188, 212, 0.2);
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .path-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Orbitron', monospace;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            overflow-x: auto;
+        }
+
+        /* Écran de chargement */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 39, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(0, 188, 212, 0.2);
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .loading-progress {
+            width: 300px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1a237e, #00bcd4);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Options visuelles */
+        .visual-options {
+            margin-top: 20px;
+        }
+
+        .option-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: rgba(0, 188, 212, 0.5);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(25px);
+        }
+
+        /* Convergence Graph */
+        .convergence-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+        .convergence-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #convergence-canvas {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            width: 100%;
+            height: 200px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .control-panel {
+                max-height: none;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .algorithms-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Arrière-plan animé -->
+    <canvas id="stars-canvas"></canvas>
+
+    <!-- En-tête -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-rocket"></i>
+            <span>Voyageur Terrestre</span>
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>Prêt</span>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <!-- Panneau de contrôle -->
+        <div class="control-panel">
+            <h2 class="panel-title">Panneau de Contrôle</h2>
+            
+            <div class="parameter-group">
+                <label class="parameter-label">Nombre de villes</label>
+                <input type="range" class="parameter-slider" id="cities-slider" min="5" max="20" value="10">
+                <div class="slider-value" id="cities-value">10</div>
+            </div>
+            
+            <div class="parameter-group">
+                <label class="parameter-label">Taille de population</label>
+                <input type="range" class="parameter-slider" id="population-slider" min="20" max="200" value="100">
+                <div class="slider-value" id="population-value">100</div>
+            </div>
+            
+            <div class="parameter-group">
+                <label class="parameter-label">Nombre de générations</label>
+                <input type="range" class="parameter-slider" id="generations-slider" min="50" max="500" value="200">
+                <div class="slider-value" id="generations-value">200</div>
+            </div>
+            
+            <div class="parameter-group">
+                <label class="parameter-label">Taux de mutation</label>
+                <input type="range" class="parameter-slider" id="mutation-slider" min="1" max="20" value="5">
+                <div class="slider-value" id="mutation-value">5%</div>
+            </div>
+            
+            <div class="parameter-group">
+                <label class="parameter-label">Taux de croisement</label>
+                <input type="range" class="parameter-slider" id="crossover-slider" min="50" max="100" value="80">
+                <div class="slider-value" id="crossover-value">80%</div>
+            </div>
+            
+            <h3 class="panel-title">Algorithmes</h3>
+            <div class="algorithms-container">
+                <div class="algorithm-card active" data-algorithm="genetic-roulette">
+                    <div class="algorithm-icon">🎲</div>
+                    <div class="algorithm-name">Génétique Roulette</div>
+                </div>
+                <div class="algorithm-card" data-algorithm="genetic-rank">
+                    <div class="algorithm-icon">🏆</div>
+                    <div class="algorithm-name">Génétique Rang</div>
+                </div>
+                <div class="algorithm-card" data-algorithm="simulated-annealing">
+                    <div class="algorithm-icon">🔥</div>
+                    <div class="algorithm-name">Recuit Simulé</div>
+                </div>
+                <div class="algorithm-card" data-algorithm="tabu-search">
+                    <div class="algorithm-icon">📋</div>
+                    <div class="algorithm-name">Recherche Tabou</div>
+                </div>
+            </div>
+            
+            <button class="btn" id="optimize-btn">
+                <i class="fas fa-play"></i> Lancer l'Optimisation
+            </button>
+            
+            <div class="visual-options">
+                <h3 class="panel-title">Options Visuelles</h3>
+                <div class="option-toggle">
+                    <span>Effet néon</span>
+                    <div class="toggle-switch active" id="neon-toggle">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="option-toggle">
+                    <span>Animation du chemin</span>
+                    <div class="toggle-switch active" id="animation-toggle">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="option-toggle">
+                    <span>Particules</span>
+                    <div class="toggle-switch active" id="particles-toggle">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zone de visualisation -->
+        <div class="visualization-area">
+            <div class="visualization-container">
+                <h3 class="visualization-title">Visualisation du Trajet Optimal</h3>
+                <canvas id="path-canvas"></canvas>
+            </div>
+            
+            <div class="results-container">
+                <h3 class="results-title">Résultats d'Optimisation</h3>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">Distance optimale</div>
+                        <div class="result-value" id="optimal-distance">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Temps d'exécution</div>
+                        <div class="result-value" id="execution-time">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Taux d'amélioration</div>
+                        <div class="result-value" id="improvement-rate">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Efficacité</div>
+                        <div class="result-value" id="efficiency">-</div>
+                    </div>
+                </div>
+                <div class="path-display" id="path-display">
+                    Chemin optimal : -
+                </div>
+            </div>
+            
+            <div class="convergence-container">
+                <h3 class="convergence-title">Graphique de Convergence</h3>
+                <canvas id="convergence-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Écran de chargement -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Optimisation en cours...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let cities = [];
+        let optimalPath = [];
+        let selectedAlgorithm = 'genetic-roulette';
+        let neonEffect = true;
+        let pathAnimation = true;
+        let particlesEffect = true;
+        let convergenceData = [];
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initStarsBackground();
+            initSliders();
+            initAlgorithmSelection();
+            initVisualOptions();
+            initCanvas();
+            initConvergenceCanvas();
+            generateRandomCities(10);
+            drawCities();
+        });
+        
+        // Initialisation de l'arrière-plan étoilé
+        function initStarsBackground() {
+            const canvas = document.getElementById('stars-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const stars = [];
+            const numStars = 200;
+            
+            // Création des étoiles
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    alpha: Math.random(),
+                    alphaChange: Math.random() * 0.02 - 0.01
+                });
+            }
+            
+            // Animation des étoiles
+            function animateStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Dessin du dégradé de fond
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#0a0e27');
+                gradient.addColorStop(1, '#1a237e');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Dessin des étoiles
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                    ctx.fill();
+                    
+                    // Mise à jour de l'alpha pour l'effet de scintillement
+                    star.alpha += star.alphaChange;
+                    if (star.alpha <= 0 || star.alpha >= 1) {
+                        star.alphaChange = -star.alphaChange;
+                    }
+                });
+                
+                requestAnimationFrame(animateStars);
+            }
+            
+            animateStars();
+            
+            // Redimensionnement de la fenêtre
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+        
+        // Initialisation des curseurs
+        function initSliders() {
+            const sliders = [
+                { id: 'cities-slider', valueId: 'cities-value', suffix: '' },
+                { id: 'population-slider', valueId: 'population-value', suffix: '' },
+                { id: 'generations-slider', valueId: 'generations-value', suffix: '' },
+                { id: 'mutation-slider', valueId: 'mutation-value', suffix: '%' },
+                { id: 'crossover-slider', valueId: 'crossover-value', suffix: '%' }
+            ];
+            
+            sliders.forEach(slider => {
+                const sliderElement = document.getElementById(slider.id);
+                const valueElement = document.getElementById(slider.valueId);
+                
+                sliderElement.addEventListener('input', function() {
+                    valueElement.textContent = this.value + slider.suffix;
+                    
+                    if (slider.id === 'cities-slider') {
+                        generateRandomCities(parseInt(this.value));
+                        drawCities();
+                    }
+                });
+            });
+        }
+        
+        // Initialisation de la sélection d'algorithme
+        function initAlgorithmSelection() {
+            const algorithmCards = document.querySelectorAll('.algorithm-card');
+            
+            algorithmCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    algorithmCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedAlgorithm = this.dataset.algorithm;
+                });
+            });
+        }
+        
+        // Initialisation des options visuelles
+        function initVisualOptions() {
+            document.getElementById('neon-toggle').addEventListener('click', function() {
+                this.classList.toggle('active');
+                neonEffect = this.classList.contains('active');
+                drawPath();
+            });
+            
+            document.getElementById('animation-toggle').addEventListener('click', function() {
+                this.classList.toggle('active');
+                pathAnimation = this.classList.contains('active');
+            });
+            
+            document.getElementById('particles-toggle').addEventListener('click', function() {
+                this.classList.toggle('active');
+                particlesEffect = this.classList.contains('active');
+            });
+        }
+        
+        // Initialisation du canvas de visualisation
+        function initCanvas() {
+            const canvas = document.getElementById('path-canvas');
+            const container = canvas.parentElement;
+            
+            canvas.width = container.clientWidth - 40;
+            canvas.height = 400;
+            
+            window.addEventListener('resize', () => {
+                canvas.width = container.clientWidth - 40;
+                drawCities();
+                if (optimalPath.length > 0) {
+                    drawPath();
+                }
+            });
+        }
+        
+        // Initialisation du canvas de convergence
+        function initConvergenceCanvas() {
+            const canvas = document.getElementById('convergence-canvas');
+            const container = canvas.parentElement;
+            
+            canvas.width = container.clientWidth - 40;
+            canvas.height = 200;
+            
+            window.addEventListener('resize', () => {
+                canvas.width = container.clientWidth - 40;
+                if (convergenceData.length > 0) {
+                    drawConvergenceGraph();
+                }
+            });
+        }
+        
+        // Génération de villes aléatoires
+        function generateRandomCities(numCities) {
+            cities = [];
+            const canvas = document.getElementById('path-canvas');
+            const padding = 50;
+            
+            for (let i = 0; i < numCities; i++) {
+                cities.push({
+                    id: i,
+                    x: padding + Math.random() * (canvas.width - 2 * padding),
+                    y: padding + Math.random() * (canvas.height - 2 * padding)
+                });
+            }
+            
+            optimalPath = [];
+            convergenceData = [];
+        }
+        
+        // Dessin des villes
+        function drawCities() {
+            const canvas = document.getElementById('path-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessin de la grille
+            ctx.strokeStyle = 'rgba(0, 188, 212, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let i = 0; i <= canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+            
+            // Dessin des villes
+            cities.forEach((city, index) => {
+                // Cercle extérieur avec effet néon
+                if (neonEffect) {
+                    ctx.beginPath();
+                    ctx.arc(city.x, city.y, 15, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 188, 212, 0.2)';
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(city.x, city.y, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 188, 212, 0.4)';
+                    ctx.fill();
+                }
+                
+                // Cercle principal
+                ctx.beginPath();
+                ctx.arc(city.x, city.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00bcd4';
+                ctx.fill();
+                
+                // Numéro de la ville
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(index + 1, city.x, city.y);
+            });
+        }
+        
+        // Dessin du chemin optimal
+        function drawPath() {
+            if (optimalPath.length === 0) return;
+            
+            const canvas = document.getElementById('path-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Redessiner les villes
+            drawCities();
+            
+            // Dessiner le chemin
+            ctx.beginPath();
+            ctx.moveTo(cities[optimalPath[0]].x, cities[optimalPath[0]].y);
+            
+            for (let i = 1; i < optimalPath.length; i++) {
+                ctx.lineTo(cities[optimalPath[i]].x, cities[optimalPath[i]].y);
+            }
+            
+            ctx.closePath();
+            
+            // Style du chemin
+            if (neonEffect) {
+                ctx.shadowColor = '#00bcd4';
+                ctx.shadowBlur = 10;
+            }
+            
+            ctx.strokeStyle = '#00bcd4';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Animation du chemin
+            if (pathAnimation) {
+                animatePath();
+            }
+        }
+        
+        // Animation du chemin
+        function animatePath() {
+            if (optimalPath.length === 0) return;
+            
+            const canvas = document.getElementById('path-canvas');
+            const ctx = canvas.getContext('2d');
+            let progress = 0;
+            const animationSpeed = 0.02;
+            
+            function animate() {
+                drawCities();
+                
+                ctx.beginPath();
+                ctx.moveTo(cities[optimalPath[0]].x, cities[optimalPath[0]].y);
+                
+                for (let i = 1; i < optimalPath.length; i++) {
+                    const fromCity = cities[optimalPath[i - 1]];
+                    const toCity = cities[optimalPath[i]];
+                    
+                    const segmentProgress = Math.min(1, Math.max(0, progress * optimalPath.length - (i - 1)));
+                    
+                    if (segmentProgress > 0) {
+                        const x = fromCity.x + (toCity.x - fromCity.x) * segmentProgress;
+                        const y = fromCity.y + (toCity.y - fromCity.y) * segmentProgress;
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                if (neonEffect) {
+                    ctx.shadowColor = '#00bcd4';
+                    ctx.shadowBlur = 10;
+                }
+                
+                ctx.strokeStyle = '#00bcd4';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                progress += animationSpeed;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    drawPath();
+                }
+            }
+            
+            animate();
+        }
+        
+        // Dessin du graphique de convergence
+        function drawConvergenceGraph() {
+            const canvas = document.getElementById('convergence-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (convergenceData.length === 0) return;
+            
+            // Trouver les valeurs min et max
+            const minDistance = Math.min(...convergenceData);
+            const maxDistance = Math.max(...convergenceData);
+            const distanceRange = maxDistance - minDistance || 1;
+            
+            // Dessin des axes
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            // Axe X
+            ctx.beginPath();
+            ctx.moveTo(30, canvas.height - 30);
+            ctx.lineTo(canvas.width - 10, canvas.height - 30);
+            ctx.stroke();
+            
+            // Axe Y
+            ctx.beginPath();
+            ctx.moveTo(30, 10);
+            ctx.lineTo(30, canvas.height - 30);
+            ctx.stroke();
+            
+            // Dessin de la courbe de convergence
+            ctx.strokeStyle = '#00bcd4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const xStep = (canvas.width - 40) / (convergenceData.length - 1 || 1);
+            
+            convergenceData.forEach((distance, index) => {
+                const x = 30 + index * xStep;
+                const y = canvas.height - 30 - ((distance - minDistance) / distanceRange) * (canvas.height - 40);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '10px Orbitron';
+            ctx.textAlign = 'center';
+            
+            // Label X
+            ctx.fillText('Générations', canvas.width / 2, canvas.height - 5);
+            
+            // Label Y
+            ctx.save();
+            ctx.translate(10, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Distance', 0, 0);
+            ctx.restore();
+        }
+        
+        // Calcul de la distance totale d'un chemin
+        function calculateDistance(path) {
+            let totalDistance = 0;
+            
+            for (let i = 0; i < path.length; i++) {
+                const fromCity = cities[path[i]];
+                const toCity = cities[path[(i + 1) % path.length]];
+                
+                const dx = fromCity.x - toCity.x;
+                const dy = fromCity.y - toCity.y;
+                
+                totalDistance += Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            return totalDistance;
+        }
+        
+        // Algorithme génétique avec sélection par roulette (compatible avec le dépôt)
+        function geneticAlgorithmRoulette() {
+            const populationSize = parseInt(document.getElementById('population-slider').value);
+            const generations = parseInt(document.getElementById('generations-slider').value);
+            const mutationRate = parseInt(document.getElementById('mutation-slider').value) / 100;
+            const crossoverRate = parseInt(document.getElementById('crossover-slider').value) / 100;
+            
+            // Initialisation de la population
+            let population = [];
+            for (let i = 0; i < populationSize; i++) {
+                const individual = [...Array(cities.length).keys()];
+                for (let j = individual.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [individual[j], individual[k]] = [individual[k], individual[j]];
+                }
+                population.push(individual);
+            }
+            
+            // Réinitialisation des données de convergence
+            convergenceData = [];
+            
+            // Évolution
+            for (let gen = 0; gen < generations; gen++) {
+                // Calcul de la fitness
+                const fitness = population.map(individual => 1 / calculateDistance(individual));
+                const totalFitness = fitness.reduce((sum, f) => sum + f, 0);
+                
+                // Enregistrement de la meilleure distance pour le graphique de convergence
+                let bestIndividual = population[0];
+                let bestDistance = calculateDistance(bestIndividual);
+                
+                for (let i = 1; i < population.length; i++) {
+                    const distance = calculateDistance(population[i]);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestIndividual = population[i];
+                    }
+                }
+                
+                convergenceData.push(bestDistance);
+                
+                // Sélection par roulette
+                const newPopulation = [];
+                
+                // Élitisme : conserver le meilleur individu
+                newPopulation.push([...bestIndividual]);
+                
+                while (newPopulation.length < populationSize) {
+                    let random = Math.random() * totalFitness;
+                    let sum = 0;
+                    let selectedIdx = 0;
+                    
+                    for (let j = 0; j < population.length; j++) {
+                        sum += fitness[j];
+                        if (sum >= random) {
+                            selectedIdx = j;
+                            break;
+                        }
+                    }
+                    
+                    // Croisement
+                    let child;
+                    if (Math.random() < crossoverRate) {
+                        const parent2 = population[Math.floor(Math.random() * population.length)];
+                        child = crossover(population[selectedIdx], parent2);
+                    } else {
+                        child = [...population[selectedIdx]];
+                    }
+                    
+                    // Mutation
+                    if (Math.random() < mutationRate) {
+                        mutate(child);
+                    }
+                    
+                    newPopulation.push(child);
+                }
+                
+                population = newPopulation;
+                
+                // Mise à jour de la barre de progression
+                const progress = ((gen + 1) / generations) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+            }
+            
+            // Sélection du meilleur individu
+            let bestIndividual = population[0];
+            let bestDistance = calculateDistance(bestIndividual);
+            
+            for (let i = 1; i < population.length; i++) {
+                const distance = calculateDistance(population[i]);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestIndividual = population[i];
+                }
+            }
+            
+            return {
+                path: bestIndividual,
+                distance: bestDistance
+            };
+        }
+        
+        // Algorithme génétique avec sélection par rang (compatible avec le dépôt)
+        function geneticAlgorithmRank() {
+            const populationSize = parseInt(document.getElementById('population-slider').value);
+            const generations = parseInt(document.getElementById('generations-slider').value);
+            const mutationRate = parseInt(document.getElementById('mutation-slider').value) / 100;
+            const crossoverRate = parseInt(document.getElementById('crossover-slider').value) / 100;
+            
+            // Initialisation de la population
+            let population = [];
+            for (let i = 0; i < populationSize; i++) {
+                const individual = [...Array(cities.length).keys()];
+                for (let j = individual.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [individual[j], individual[k]] = [individual[k], individual[j]];
+                }
+                population.push(individual);
+            }
+            
+            // Réinitialisation des données de convergence
+            convergenceData = [];
+            
+            // Évolution
+            for (let gen = 0; gen < generations; gen++) {
+                // Calcul de la fitness et tri par rang
+                const rankedPopulation = population.map(individual => ({
+                    individual: individual,
+                    fitness: 1 / calculateDistance(individual)
+                }));
+                
+                rankedPopulation.sort((a, b) => b.fitness - a.fitness);
+                
+                // Enregistrement de la meilleure distance pour le graphique de convergence
+                convergenceData.push(1 / rankedPopulation[0].fitness);
+                
+                // Sélection par rang
+                const newPopulation = [];
+                
+                // Élitisme : conserver le meilleur individu
+                newPopulation.push([...rankedPopulation[0].individual]);
+                
+                while (newPopulation.length < populationSize) {
+                    // Sélection biaisée vers les rangs supérieurs
+                    const rank = Math.floor(Math.sqrt(Math.random()) * populationSize);
+                    const parent1 = rankedPopulation[rank].individual;
+                    const parent2 = rankedPopulation[Math.floor(Math.random() * populationSize)].individual;
+                    
+                    // Croisement
+                    let child;
+                    if (Math.random() < crossoverRate) {
+                        child = crossover(parent1, parent2);
+                    } else {
+                        child = [...parent1];
+                    }
+                    
+                    // Mutation
+                    if (Math.random() < mutationRate) {
+                        mutate(child);
+                    }
+                    
+                    newPopulation.push(child);
+                }
+                
+                population = newPopulation;
+                
+                // Mise à jour de la barre de progression
+                const progress = ((gen + 1) / generations) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+            }
+            
+            // Sélection du meilleur individu
+            let bestIndividual = population[0];
+            let bestDistance = calculateDistance(bestIndividual);
+            
+            for (let i = 1; i < population.length; i++) {
+                const distance = calculateDistance(population[i]);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestIndividual = population[i];
+                }
+            }
+            
+            return {
+                path: bestIndividual,
+                distance: bestDistance
+            };
+        }
+        
+        // Algorithme de recuit simulé (compatible avec le dépôt)
+        function simulatedAnnealing() {
+            const iterations = parseInt(document.getElementById('generations-slider').value) * 10;
+            const initialTemperature = 1000;
+            const coolingRate = 0.995;
+            
+            // Solution initiale
+            let currentPath = [...Array(cities.length).keys()];
+            for (let i = currentPath.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentPath[i], currentPath[j]] = [currentPath[j], currentPath[i]];
+            }
+            
+            let bestPath = [...currentPath];
+            let currentDistance = calculateDistance(currentPath);
+            let bestDistance = currentDistance;
+            let temperature = initialTemperature;
+            
+            // Réinitialisation des données de convergence
+            convergenceData = [];
+            
+            for (let i = 0; i < iterations; i++) {
+                // Génération d'un voisin
+                const neighborPath = [...currentPath];
+                const idx1 = Math.floor(Math.random() * neighborPath.length);
+                const idx2 = Math.floor(Math.random() * neighborPath.length);
+                [neighborPath[idx1], neighborPath[idx2]] = [neighborPath[idx2], neighborPath[idx1]];
+                
+                const neighborDistance = calculateDistance(neighborPath);
+                
+                // Acceptation ou rejet
+                if (neighborDistance < currentDistance || Math.random() < Math.exp((currentDistance - neighborDistance) / temperature)) {
+                    currentPath = neighborPath;
+                    currentDistance = neighborDistance;
+                    
+                    if (currentDistance < bestDistance) {
+                        bestPath = [...currentPath];
+                        bestDistance = currentDistance;
+                    }
+                }
+                
+                // Refroidissement
+                temperature *= coolingRate;
+                
+                // Enregistrement pour le graphique de convergence (échantillonnage)
+                if (i % 10 === 0) {
+                    convergenceData.push(bestDistance);
+                }
+                
+                // Mise à jour de la barre de progression
+                const progress = ((i + 1) / iterations) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+            }
+            
+            return {
+                path: bestPath,
+                distance: bestDistance
+            };
+        }
+        
+        // Algorithme de recherche tabou (compatible avec le dépôt)
+        function tabuSearch() {
+            const maxIterations = parseInt(document.getElementById('generations-slider').value) * 10;
+            const tabuTenure = 10;
+            
+            // Solution initiale
+            let currentPath = [...Array(cities.length).keys()];
+            for (let i = currentPath.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentPath[i], currentPath[j]] = [currentPath[j], currentPath[i]];
+            }
+            
+            let bestPath = [...currentPath];
+            let currentDistance = calculateDistance(currentPath);
+            let bestDistance = currentDistance;
+            
+            // Liste tabou
+            const tabuList = {};
+            
+            // Réinitialisation des données de convergence
+            convergenceData = [];
+            
+            for (let i = 0; i < maxIterations; i++) {
+                let bestNeighbor = null;
+                let bestNeighborDistance = Infinity;
+                let bestMove = null;
+                
+                // Génération de tous les voisins
+                for (let j = 0; j < cities.length; j++) {
+                    for (let k = j + 1; k < cities.length; k++) {
+                        const neighborPath = [...currentPath];
+                        [neighborPath[j], neighborPath[k]] = [neighborPath[k], neighborPath[j]];
+                        
+                        const neighborDistance = calculateDistance(neighborPath);
+                        const move = `${j}-${k}`;
+                        
+                        // Vérification si le mouvement est tabou
+                        if (!tabuList[move] || neighborDistance < bestDistance) {
+                            if (neighborDistance < bestNeighborDistance) {
+                                bestNeighbor = neighborPath;
+                                bestNeighborDistance = neighborDistance;
+                                bestMove = move;
+                            }
+                        }
+                    }
+                }
+                
+                // Mise à jour de la solution courante
+                if (bestNeighbor) {
+                    currentPath = bestNeighbor;
+                    currentDistance = bestNeighborDistance;
+                    
+                    // Mise à jour de la meilleure solution
+                    if (currentDistance < bestDistance) {
+                        bestPath = [...currentPath];
+                        bestDistance = currentDistance;
+                    }
+                    
+                    // Mise à jour de la liste tabou
+                    for (const move in tabuList) {
+                        tabuList[move]--;
+                        if (tabuList[move] <= 0) {
+                            delete tabuList[move];
+                        }
+                    }
+                    
+                    if (bestMove) {
+                        tabuList[bestMove] = tabuTenure;
+                    }
+                }
+                
+                // Enregistrement pour le graphique de convergence (échantillonnage)
+                if (i % 10 === 0) {
+                    convergenceData.push(bestDistance);
+                }
+                
+                // Mise à jour de la barre de progression
+                const progress = ((i + 1) / maxIterations) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+            }
+            
+            return {
+                path: bestPath,
+                distance: bestDistance
+            };
+        }
+        
+        // Fonction de croisement pour les algorithmes génétiques (compatible avec le dépôt)
+        function crossover(parent1, parent2) {
+            // Croisement en deux points (2-point crossover)
+            const start = Math.floor(Math.random() * parent1.length);
+            const end = Math.floor(Math.random() * (parent1.length - start)) + start;
+            
+            const child = new Array(parent1.length).fill(-1);
+            
+            // Copie du segment du parent1
+            for (let i = start; i < end; i++) {
+                child[i] = parent1[i];
+            }
+            
+            // Remplissage avec les éléments du parent2
+            let currentPos = 0;
+            for (let i = 0; i < parent2.length; i++) {
+                if (!child.includes(parent2[i])) {
+                    while (child[currentPos] !== -1) {
+                        currentPos++;
+                    }
+                    child[currentPos] = parent2[i];
+                }
+            }
+            
+            return child;
+        }
+        
+        // Fonction de mutation pour les algorithmes génétiques (compatible avec le dépôt)
+        function mutate(individual) {
+            // Mutation par échange (swap mutation)
+            const idx1 = Math.floor(Math.random() * individual.length);
+            const idx2 = Math.floor(Math.random() * individual.length);
+            [individual[idx1], individual[idx2]] = [individual[idx2], individual[idx1]];
+        }
+        
+        // Lancement de l'optimisation
+        document.getElementById('optimize-btn').addEventListener('click', function() {
+            // Affichage de l'écran de chargement
+            document.getElementById('loading-overlay').classList.add('active');
+            document.getElementById('progress-bar').style.width = '0%';
+            
+            // Simulation du calcul asynchrone
+            setTimeout(() => {
+                let result;
+                const startTime = performance.now();
+                
+                // Exécution de l'algorithme sélectionné
+                switch (selectedAlgorithm) {
+                    case 'genetic-roulette':
+                        result = geneticAlgorithmRoulette();
+                        break;
+                    case 'genetic-rank':
+                        result = geneticAlgorithmRank();
+                        break;
+                    case 'simulated-annealing':
+                        result = simulatedAnnealing();
+                        break;
+                    case 'tabu-search':
+                        result = tabuSearch();
+                        break;
+                }
+                
+                const endTime = performance.now();
+                const executionTime = (endTime - startTime) / 1000;
+                
+                // Mise à jour des résultats
+                optimalPath = result.path;
+                const optimalDistance = result.distance;
+                
+                // Calcul du taux d'amélioration (comparaison avec une solution aléatoire)
+                const randomPath = [...Array(cities.length).keys()];
+                for (let i = randomPath.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [randomPath[i], randomPath[j]] = [randomPath[j], randomPath[i]];
+                }
+                const randomDistance = calculateDistance(randomPath);
+                const improvementRate = ((randomDistance - optimalDistance) / randomDistance * 100).toFixed(2);
+                
+                // Calcul de l'efficacité (basée sur le nombre de villes et la distance)
+                const maxPossibleDistance = cities.length * 100; // Estimation
+                const efficiency = ((maxPossibleDistance - optimalDistance) / maxPossibleDistance * 100).toFixed(2);
+                
+                // Mise à jour de l'interface
+                document.getElementById('optimal-distance').textContent = optimalDistance.toFixed(2);
+                document.getElementById('execution-time').textContent = executionTime.toFixed(2) + 's';
+                document.getElementById('improvement-rate').textContent = improvementRate + '%';
+                document.getElementById('efficiency').textContent = efficiency + '%';
+                
+                // Affichage du chemin
+                const pathString = optimalPath.map(cityIndex => cityIndex + 1).join(' → ');
+                document.getElementById('path-display').textContent = `Chemin optimal : ${pathString}`;
+                
+                // Dessin du chemin
+                drawPath();
+                
+                // Dessin du graphique de convergence
+                drawConvergenceGraph();
+                
+                // Masquage de l'écran de chargement
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').classList.remove('active');
+                }, 500);
+            }, 100);
+        });
+    </script>
+</body>
+</html>
